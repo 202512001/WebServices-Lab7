@@ -1,0 +1,36 @@
+{
+  "info": {
+    "name": "API Gateway – Lab 7",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "gatewayBase", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    { "name": "Gateway health check", "request": { "method": "GET", "url": "{{gatewayBase}}/health" } },
+    { "name": "GET /users via gateway", "request": { "method": "GET", "url": "{{gatewayBase}}/users" } },
+    { "name": "GET /products via gateway", "request": { "method": "GET", "url": "{{gatewayBase}}/products" } },
+    {
+      "name": "POST /orders via gateway (valid)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": 101,\n  \"productId\": 501,\n  \"quantity\": 2\n}" },
+        "url": "{{gatewayBase}}/orders"
+      }
+    },
+    {
+      "name": "POST /orders via gateway (invalid user - 404)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": 9999,\n  \"productId\": 501,\n  \"quantity\": 1\n}" },
+        "url": "{{gatewayBase}}/orders"
+      }
+    },
+    {
+      "name": "GET /users via gateway while User Service is stopped (502/503)",
+      "request": { "method": "GET", "url": "{{gatewayBase}}/users" }
+    }
+  ]
+}

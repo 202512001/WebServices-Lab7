@@ -1,0 +1,60 @@
+# Lab 7 — API Gateway + Microservices Compose
+# Only api-gateway's port is published to the host — User, Product and
+# Order are reachable only from inside campus-network, exactly as the
+# assignment requires.
+#
+# Run from the folder containing this file: docker compose up -d
+
+services:
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    # No "ports:" mapping — not reachable from outside Docker.
+    environment:
+      USER_SERVICE_PORT: 3001
+    networks:
+      - campus-network
+
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    environment:
+      PRODUCT_SERVICE_PORT: 3002
+    networks:
+      - campus-network
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    environment:
+      ORDER_SERVICE_PORT: 3003
+      USER_SERVICE_URL: http://user-service:3001
+      PRODUCT_SERVICE_URL: http://product-service:3002
+    depends_on:
+      - user-service
+      - product-service
+    networks:
+      - campus-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"   # the ONLY externally published port
+    environment:
+      GATEWAY_PORT: 8080
+      # Service registry — config-based service discovery. Changing
+      # these three lines (no code change) is enough to repoint the
+      # gateway at different service locations.
+      USER_SERVICE_URL: http://user-service:3001
+      PRODUCT_SERVICE_URL: http://product-service:3002
+      ORDER_SERVICE_URL: http://order-service:3003
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+    networks:
+      - campus-network
+
+networks:
+  campus-network:
